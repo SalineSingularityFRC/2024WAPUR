@@ -69,6 +69,7 @@ public class SwerveModule {
       double zeroPosition,
       String canNetwork,
       boolean isInverted,
+      boolean isInvertedAngle,
       String name) { // add a zeroPosition thing
     this.isCan = true;
     c_encoder = new CANcoder(Can_ID_encoder, canNetwork);
@@ -87,7 +88,7 @@ public class SwerveModule {
     current.SupplyCurrentLimit = 25;
     current.SupplyCurrentLimitEnable = true;
     driveMotor.getConfigurator().apply(current);
-    angleMotor = new SwerveAngle(Can_ID_angleMotor, canNetwork);
+    angleMotor = new SwerveAngle(Can_ID_angleMotor, canNetwork, isInvertedAngle);
     
     this.name = name;
     driveMotor.setInverted(isInverted);

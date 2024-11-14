@@ -93,6 +93,7 @@ public class SwerveSubsystem extends SubsystemBase implements Subsystem {
         Constants.WheelOffset.FL,
         Constants.Canbus.DRIVE_TRAIN,
         Constants.Inverted.FL,
+        Constants.Inverted.ANGLE,
         "FL");
     swerveModules[FR] = new SwerveModule(
         Constants.CanId.Swerve.Drive.FR,
@@ -101,6 +102,7 @@ public class SwerveSubsystem extends SubsystemBase implements Subsystem {
         Constants.WheelOffset.FR,
         Constants.Canbus.DRIVE_TRAIN,
         Constants.Inverted.FR,
+        Constants.Inverted.ANGLE,
         "FR");
     swerveModules[BL] = new SwerveModule(
         Constants.CanId.Swerve.Drive.BL,
@@ -109,6 +111,7 @@ public class SwerveSubsystem extends SubsystemBase implements Subsystem {
         Constants.WheelOffset.BL,
         Constants.Canbus.DRIVE_TRAIN,
         Constants.Inverted.BL,
+        Constants.Inverted.ANGLE,
         "BL");
     swerveModules[BR] = new SwerveModule(
         Constants.CanId.Swerve.Drive.BR,
@@ -117,6 +120,7 @@ public class SwerveSubsystem extends SubsystemBase implements Subsystem {
         Constants.WheelOffset.BR,
         Constants.Canbus.DRIVE_TRAIN,
         Constants.Inverted.BR,
+        Constants.Inverted.ANGLE,
         "BR");
 
     odometry = new SwerveOdometry(this);

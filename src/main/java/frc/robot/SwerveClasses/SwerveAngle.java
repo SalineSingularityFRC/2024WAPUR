@@ -32,7 +32,7 @@ public class SwerveAngle {
    * and it needs to initialize the falcon motor and configure it (things like PID values and such)
    */
 
-  public SwerveAngle(int angleMotorId, String canNetwork) {
+  public SwerveAngle(int angleMotorId, String canNetwork, Boolean isInverted) {
     angleMotor = new TalonFX(angleMotorId, canNetwork);
     angleMotorID = angleMotorId;
     MotorOutputConfigs configs = new MotorOutputConfigs();
@@ -59,7 +59,7 @@ public class SwerveAngle {
     angleMotor.getConfigurator().apply(configs);
     // angleMotor.getConfigurator().apply(current);
     
-    angleMotor.setInverted(true);
+    angleMotor.setInverted(isInverted);
   }
 
   /*
@@ -127,9 +127,6 @@ public class SwerveAngle {
         positionTarget.withPosition(
             Constants.MotorGearRatio.ANGLE * (targetAngle / (2 * Math.PI))));
 
-    if(angleMotorID == 15){
-      SmartDashboard.putNumber("Goofy Math", (Constants.MotorGearRatio.ANGLE * (targetAngle / (2 * Math.PI))) - angleMotor.getPosition().getValue());
-    }
     if (Math.abs(delta % Math.PI) > Constants.AngleInaccuracy.MAX
         && Math.abs(delta % Math.PI) < Math.PI - Constants.AngleInaccuracy.MAX) {
       return AnglePosition.Moving; // Wheel is still in the process of turning
