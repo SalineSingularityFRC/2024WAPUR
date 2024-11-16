@@ -1,14 +1,11 @@
 package frc.robot.SwerveClasses;
 
-import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.robot.PID;
@@ -26,15 +23,13 @@ public class SwerveAngle {
   private TalonFX angleMotor;
   private PositionVoltage positionTarget;
 
-  public int angleMotorID;
   /*
    * Our constructor needs to take a parameter that determines which CAN ID the falcon we are using has
    * and it needs to initialize the falcon motor and configure it (things like PID values and such)
    */
 
-  public SwerveAngle(int angleMotorId, String canNetwork, Boolean isInverted) {
+  protected SwerveAngle(int angleMotorId, String canNetwork, Boolean isInverted) {
     angleMotor = new TalonFX(angleMotorId, canNetwork);
-    angleMotorID = angleMotorId;
     MotorOutputConfigs configs = new MotorOutputConfigs();
     
     // Factory reset before applying configs
@@ -50,14 +45,9 @@ public class SwerveAngle {
     slot0Configs.kD = turnPID.D;;
     slot0Configs.kS = turnPID.S;
 
-    // CurrentLimitsConfigs current = new CurrentLimitsConfigs();
-    // current.SupplyCurrentLimit = 15;
-    // current.SupplyCurrentLimitEnable = true;
-
     configs.NeutralMode = NeutralModeValue.Brake;
     angleMotor.getConfigurator().apply(slot0Configs);
     angleMotor.getConfigurator().apply(configs);
-    // angleMotor.getConfigurator().apply(current);
     
     angleMotor.setInverted(isInverted);
   }
@@ -66,7 +56,7 @@ public class SwerveAngle {
    * This enum provides the current state of the angle motor, we should either be matching the requested angle (Positive),
    * 180° off of it (Negative), or in the process of getting to one of those positions (Moving)
    */
-  public enum AnglePosition {
+  protected enum AnglePosition {
     Positive,
     Negative,
     Moving
@@ -78,9 +68,7 @@ public class SwerveAngle {
    * It returns a value that indicates if we are in the target position, or 180° off of it,
    * or still working to get to one of those positions
    */
-
-  // takes in an angle in and turns the wheel to that angle in the fastest way possible
-  public AnglePosition setAngle(double targetAngle) {
+  protected AnglePosition setAngle(double targetAngle) {
     SmartDashboard.putNumber("Target Angle", targetAngle);
     SmartDashboard.putNumber("Angle Clamped", getAngleClamped());
     double wheelPosition =
@@ -138,7 +126,7 @@ public class SwerveAngle {
    * Returns the angle (in radians) that the Talon is currently reporting we are in
    * minus our offset
    */
-  public double getAngle() {
+  protected double getAngle() {
     double talonRadians = (angleMotor.getPosition().getValue() * 2 * Math.PI);
     double wheelRadians = talonRadians / Constants.MotorGearRatio.ANGLE;
     return wheelRadians - zeroPositionOffset;
@@ -148,8 +136,7 @@ public class SwerveAngle {
    * for getAngleClamped, return a value between [0, 2pi) that the talon says we are.
    * copied and pasted from the first lines of setAngle()
    */
-  public double getAngleClamped() {
-
+  protected double getAngleClamped() {
     if (getAngle() >= 0) {
       return getAngle() % (2 * Math.PI);
     } else {
@@ -160,14 +147,14 @@ public class SwerveAngle {
   /*
    * Returns the number of rotations in either direction the Talon is currently spun
    */
-  public double getRemainderRotations() {
+  private double getRemainderRotations() {
     return getAngle() - getAngleClamped();
   }
 
   /*
    * Set the zero angle based on the current angle (in radians) that we are reading from an external source.
    */
-  public void setZeroAngle(double currentAngle) {
+  protected void setZeroAngle(double currentAngle) {
     zeroPositionOffset += getAngle() - currentAngle;
   }
 }

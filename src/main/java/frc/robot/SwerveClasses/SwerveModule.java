@@ -4,23 +4,15 @@ import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
-
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj.AnalogAccelerometer;
-import edu.wpi.first.wpilibj.AnalogEncoder;
-import edu.wpi.first.wpilibj.AnalogInput;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
 import com.ctre.phoenix6.hardware.CANcoder;
-
 import frc.robot.Constants;
 import frc.robot.PID;
 
@@ -36,24 +28,17 @@ public class SwerveModule {
    * An instance of the TalonFX class to handle the drive motor
    * An instance of the CANcoder class to handle the encoder
    */
-  public SwerveAngle angleMotor;
-  private AnalogEncoder a_encoder;
+  private SwerveAngle angleMotor;
   private CANcoder c_encoder;
-  public TalonFX driveMotor;
+  private TalonFX driveMotor;
+  private MotorOutputConfigs motorOutputConfigs = new MotorOutputConfigs();
 
-  private final VelocityVoltage m_voltageVelocity = new VelocityVoltage(0, 0, true, 0, 0, false, false, false);
-  public MotorOutputConfigs motorOutputConfigs = new MotorOutputConfigs();
-
-  PID drive_controller_gains = Constants.PidGains.SwerveModule.DRIVE_PID_CONTROLLER;
-  PID turn_controller_gains = Constants.PidGains.SwerveModule.TURNING_PID_CONTROLLER;
+  private final PID drive_controller_gains = Constants.PidGains.SwerveModule.DRIVE_PID_CONTROLLER;
   private final PIDController m_drivePIDController = new PIDController(
       drive_controller_gains.P, drive_controller_gains.I, drive_controller_gains.D);
-  private final PIDController m_turningPIDController = new PIDController(
-      turn_controller_gains.P, turn_controller_gains.I, turn_controller_gains.D);
 
   private final double absolutePositionEncoderOffset;
   private String name;
-  private boolean isCan;
 
   /*
    * This constructor needs to take two parameters, one for the CAN ID of the
@@ -71,7 +56,6 @@ public class SwerveModule {
       boolean isInverted,
       boolean isInvertedAngle,
       String name) { // add a zeroPosition thing
-    this.isCan = true;
     c_encoder = new CANcoder(Can_ID_encoder, canNetwork);
 
     CANcoderConfiguration cancoderConfig = new CANcoderConfiguration();
@@ -111,7 +95,7 @@ public class SwerveModule {
         / Constants.MotorGearRatio.DRIVE, new Rotation2d(getEncoderPosition()));
   }
 
-  public void coast() {
+  protected void coast() {
     //driveMotor.set(0); // this is for when the joystick is not being moved at all
     driveMotor.stopMotor();
   }
@@ -129,25 +113,18 @@ public class SwerveModule {
    * the talon
    */
 
-  public void resetZeroAngle() {
+  protected void resetZeroAngle() {
     angleMotor.setZeroAngle(getEncoderPosition());
   }
 
   public double getAngleClamped(){
     return angleMotor.getAngleClamped();
   }
-  /*
-   * This method is used in Swerve Odometry
-   */
+
   public void setDesiredState(SwerveModuleState desiredState) {
-
     SwerveModuleState state = SwerveModuleState.optimize(desiredState, new Rotation2d(getEncoderPosition()));
-
     double driveOutput = m_drivePIDController.calculate(driveMotor.get(), state.speedMetersPerSecond);
-    
-    //double turnOutput = m_turningPIDController.calculate(getEncoderPosition(), state.angle.getRadians());
 
-  
     switch(angleMotor.setAngle(state.angle.getRadians())){
       case Positive:
           driveMotor.set(driveOutput);
@@ -158,12 +135,9 @@ public class SwerveModule {
       default:
         break;
     }
-    
-
   }
 
   public double getEncoderPosition() {
-
     return (c_encoder.getAbsolutePosition().getValue() * 2 * Math.PI)
         - absolutePositionEncoderOffset;
   }
@@ -191,5 +165,9 @@ public class SwerveModule {
   public double getPosition() {
     return driveMotor.getPosition().getValue() * 2 * Math.PI * Constants.Measurement.WHEELRADIUS
         / Constants.MotorGearRatio.DRIVE;
+  }
+
+  public void stopDriving() {
+      driveMotor.stopMotor();
   }
 }
