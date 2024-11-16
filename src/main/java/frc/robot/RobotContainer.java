@@ -57,11 +57,15 @@ public class RobotContainer {
 
         configureBindings();
 
+        
+
         // NamedCommands.registerCommand("Shoot", new Shooter(shooter, intake, arm));
         // NamedCommands.registerCommand("Intake", new Intake(shooter, intake, arm));
         // NamedCommands.registerCommand("StopIntake", new StopIntake(shooter, intake));
         // NamedCommands.registerCommand("Home", new Home(shooter, intake, arm));
         NamedCommands.registerCommand("StopDriving", drive.stopDriving());
+        NamedCommands.registerCommand("RumbleCommantStart", new RumbleCommandStart(armController));
+        NamedCommands.registerCommand("RumbleCommantStop", new RumbleCommandStop(armController));
         //NamedCommands.registerCommand("IntakeBarf", new IntakeBarf(intake, shooter));
         // NamedCommands.registerCommand("StopShooting", shooter.stopShooting());
 
@@ -81,31 +85,7 @@ public class RobotContainer {
         this.pathAutonChooser = new SendableChooser<String>();
 
 
-        this.pathAutonChooser.setDefaultOption("BlueLeft-2-Note", "BlueLeft-2-Note");
-        this.pathAutonChooser.addOption("BlueLeft-3-Note", "BlueLeft-3-Note");
-
-        this.pathAutonChooser.addOption("BlueRight-2-Note-CloseNote", "BlueRight-2-Note-CloseNote");
-        this.pathAutonChooser.addOption("BlueRight-3-Note-FarNote-Then-Close", "BlueRight-3-Note-FarNote-Then-Close");
-        this.pathAutonChooser.addOption("BlueRight-3-Note-Close-Then-FarNote", "BlueRight-3-Note-Close-Then-FarNote");
-
-        this.pathAutonChooser.addOption("RedLeft-2-Note-CloseNote", "BlueRight-2-Note-CloseNote");
-        this.pathAutonChooser.addOption("RedLeft-3-Note-FarNote-Then-Close", "BlueRight-3-Note-FarNote-Then-Close");
-        this.pathAutonChooser.addOption("RedRight-2-Note", "BlueLeft-2-Note");
-        this.pathAutonChooser.addOption("RedRight-3-Note", "BlueLeft-3-Note");
-
-        this.pathAutonChooser.addOption("Middle-2-Note", "BlueMiddle-2-Note");
-
-        this.pathAutonChooser.addOption("BlueMiddle-3-Note-Close2&1", "BlueMiddle-3-Note-Close2&1");
-        this.pathAutonChooser.addOption("BlueMiddle-3-Note-Close2&3", "BlueMiddle-3-Note-Close2&3");
-        this.pathAutonChooser.addOption("RedMiddle-3-Note-Close2&3", "BlueMiddle-3-Note-Close2&1");
-        this.pathAutonChooser.addOption("RedMiddle-3-Note-Close2&1", "BlueMiddle-3-Note-Close2&3");
-
-        this.pathAutonChooser.addOption("Middle-3-Note-FarNote3", "BlueMiddle-3-Note-FarNote3");
-
-        this.pathAutonChooser.addOption("Middle-4-Note", "BlueMiddle-4-Note");
-
-        //For the open house
-        this.pathAutonChooser.addOption("Open House Test", "Open House Test");
+        this.pathAutonChooser.setDefaultOption("Test Auto", "testAuto");
 
 
         // this.pathChooser.setDefaultOption("1 Meter Without Spin",
