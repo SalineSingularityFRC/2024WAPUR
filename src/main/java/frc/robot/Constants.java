@@ -80,6 +80,7 @@ public final class Constants {
     public static final boolean FR = true;
     public static final boolean BL = false;
     public static final boolean BR = true;
+    public static final boolean ANGLE = true;
   }
 
   public static final class Canbus {
@@ -128,10 +129,10 @@ public final class Constants {
 
   public static final class WheelOffset {
     // Converting rotations to radians
-    public static final double FL = (0.512451) * 2 * Math.PI;
-    public static final double FR = (0.090576) * 2 * Math.PI;
-    public static final double BL = (0.604980) * 2 * Math.PI;
-    public static final double BR = (0.173584) * 2 * Math.PI;
+    public static final double FL = (0.961670) * 2 * Math.PI;
+    public static final double FR = (0.682617) * 2 * Math.PI;
+    public static final double BL = (0.763428) * 2 * Math.PI;
+    public static final double BR = (0.551025) * 2 * Math.PI;
   }
 
   public static final class MotorGearRatio {
