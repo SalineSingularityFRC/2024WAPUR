@@ -30,12 +30,13 @@ public class RobotContainer {
         configureBindings();
 
         NamedCommands.registerCommand("StopDriving", drive.stopDriving());
+        NamedCommands.registerCommand("RumbleCommantStart", new RumbleCommandStart(armController));
+        NamedCommands.registerCommand("RumbleCommantStop", new RumbleCommandStop(armController));
 
+        this.pathChooser = new SendableChooser<PathPlannerPath>();
         this.pathAutonChooser = new SendableChooser<String>();
-        this.pathAutonChooser.setDefaultOption("BlueLeft-2-Note", "BlueLeft-2-Note");
-        this.pathAutonChooser.addOption("BlueLeft-3-Note", "BlueLeft-3-Note");
 
-
+        this.pathAutonChooser.setDefaultOption("Test Auto", "testAuto");
         SmartDashboard.putData("Auton Choices", pathAutonChooser);
     }
 
