@@ -1,29 +1,19 @@
 package frc.robot.SwerveClasses;
 
-import com.ctre.phoenix6.hardware.Pigeon2;
-
-import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
-import edu.wpi.first.math.estimator.PoseEstimator;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants;
 import frc.robot.LimelightHelpers;
-import frc.robot.Constants.PidGains.Limelight;
 import frc.robot.LimelightHelpers.PoseEstimate;
 import frc.robot.subsystems.SwerveSubsystem;
 
 public class SwerveOdometry {
   SwerveDrivePoseEstimator swerveOdometry;
-  public Pigeon2 gyro;
 
   private final int FL = 0;
   private final int FR = 1;
@@ -32,25 +22,10 @@ public class SwerveOdometry {
 
   private final SwerveDriveKinematics swerveKinematics;
 
-  private SwerveModule[] swerveModules = new SwerveModule[4];
-  private final Translation2d[] vectorKinematics = new Translation2d[4];
   private SwerveSubsystem subsystem;
 
-  public SwerveOdometry(SwerveSubsystem subsystem) {
+  public SwerveOdometry(SwerveSubsystem subsystem, Translation2d[] vectorKinematics) {
     this.subsystem = subsystem;
-    gyro = subsystem.gyro;
-    vectorKinematics[FL] =
-        new Translation2d(
-            Constants.Measurement.WHEEL_BASE / 2, Constants.Measurement.TRACK_WIDTH / 2);
-    vectorKinematics[FR] =
-        new Translation2d(
-            Constants.Measurement.WHEEL_BASE / 2, -Constants.Measurement.TRACK_WIDTH / 2);
-    vectorKinematics[BL] =
-        new Translation2d(
-            -Constants.Measurement.WHEEL_BASE / 2, Constants.Measurement.TRACK_WIDTH / 2);
-    vectorKinematics[BR] =
-        new Translation2d(
-            -Constants.Measurement.WHEEL_BASE / 2, -Constants.Measurement.TRACK_WIDTH / 2);
 
     swerveKinematics =
         new SwerveDriveKinematics(
@@ -62,17 +37,17 @@ public class SwerveOdometry {
             new Rotation2d(subsystem.getRobotAngle()),
             new SwerveModulePosition[] {
               new SwerveModulePosition(
-                  subsystem.swerveModules[FL].getPosition(),
-                  new Rotation2d(subsystem.swerveModules[FL].getEncoderPosition())),
+                  subsystem.getSwerveModule(FL).getPosition(),
+                  new Rotation2d(subsystem.getSwerveModule(FL).getEncoderPosition())),
               new SwerveModulePosition(
-                  subsystem.swerveModules[FR].getPosition(),
-                  new Rotation2d(subsystem.swerveModules[FR].getEncoderPosition())),
+                  subsystem.getSwerveModule(FR).getPosition(),
+                  new Rotation2d(subsystem.getSwerveModule(FR).getEncoderPosition())),
               new SwerveModulePosition(
-                  subsystem.swerveModules[BL].getPosition(),
-                  new Rotation2d(subsystem.swerveModules[BL].getEncoderPosition())),
+                  subsystem.getSwerveModule(BL).getPosition(),
+                  new Rotation2d(subsystem.getSwerveModule(BL).getEncoderPosition())),
               new SwerveModulePosition(
-                  subsystem.swerveModules[BR].getPosition(),
-                  new Rotation2d(subsystem.swerveModules[BR].getEncoderPosition())),
+                  subsystem.getSwerveModule(BR).getPosition(),
+                  new Rotation2d(subsystem.getSwerveModule(BR).getEncoderPosition())),
             },
             new Pose2d(0, 0, new Rotation2d()));
   }
@@ -82,17 +57,17 @@ public class SwerveOdometry {
         new Rotation2d(subsystem.getRobotAngle()),
         new SwerveModulePosition[] {
           new SwerveModulePosition(
-              subsystem.swerveModules[FL].getPosition(),
-              new Rotation2d(subsystem.swerveModules[FL].getEncoderPosition())),
+              subsystem.getSwerveModule(FL).getPosition(),
+              new Rotation2d(subsystem.getSwerveModule(FL).getEncoderPosition())),
           new SwerveModulePosition(
-              subsystem.swerveModules[FR].getPosition(),
-              new Rotation2d(subsystem.swerveModules[FR].getEncoderPosition())),
+              subsystem.getSwerveModule(FR).getPosition(),
+              new Rotation2d(subsystem.getSwerveModule(FR).getEncoderPosition())),
           new SwerveModulePosition(
-              subsystem.swerveModules[BL].getPosition(),
-              new Rotation2d(subsystem.swerveModules[BL].getEncoderPosition())),
+              subsystem.getSwerveModule(BL).getPosition(),
+              new Rotation2d(subsystem.getSwerveModule(BL).getEncoderPosition())),
           new SwerveModulePosition(
-              subsystem.swerveModules[BR].getPosition(),
-              new Rotation2d(subsystem.swerveModules[BR].getEncoderPosition())),
+              subsystem.getSwerveModule(BR).getPosition(),
+              new Rotation2d(subsystem.getSwerveModule(BR).getEncoderPosition())),
         });
 
      
@@ -141,17 +116,17 @@ public double getY() {
         new Rotation2d(subsystem.getRobotAngle()),
         new SwerveModulePosition[] {
           new SwerveModulePosition(
-              subsystem.swerveModules[FL].getPosition(),
-              new Rotation2d(subsystem.swerveModules[FL].getEncoderPosition())),
+              subsystem.getSwerveModule(FL).getPosition(),
+              new Rotation2d(subsystem.getSwerveModule(FL).getEncoderPosition())),
           new SwerveModulePosition(
-              subsystem.swerveModules[FR].getPosition(),
-              new Rotation2d(subsystem.swerveModules[FR].getEncoderPosition())),
+              subsystem.getSwerveModule(FR).getPosition(),
+              new Rotation2d(subsystem.getSwerveModule(FR).getEncoderPosition())),
           new SwerveModulePosition(
-              subsystem.swerveModules[BL].getPosition(),
-              new Rotation2d(subsystem.swerveModules[BL].getEncoderPosition())),
+              subsystem.getSwerveModule(BL).getPosition(),
+              new Rotation2d(subsystem.getSwerveModule(BL).getEncoderPosition())),
           new SwerveModulePosition(
-              subsystem.swerveModules[BR].getPosition(),
-              new Rotation2d(subsystem.swerveModules[BR].getEncoderPosition())),
+              subsystem.getSwerveModule(BR).getPosition(),
+              new Rotation2d(subsystem.getSwerveModule(BR).getEncoderPosition())),
         },
         new Pose2d(0, 0, new Rotation2d()));
   }
@@ -161,17 +136,17 @@ public double getY() {
         new Rotation2d(subsystem.getRobotAngle()),
         new SwerveModulePosition[] {
           new SwerveModulePosition(
-              subsystem.swerveModules[FL].getPosition(),
-              new Rotation2d(subsystem.swerveModules[FL].getEncoderPosition())),
+              subsystem.getSwerveModule(FL).getPosition(),
+              new Rotation2d(subsystem.getSwerveModule(FL).getEncoderPosition())),
           new SwerveModulePosition(
-              subsystem.swerveModules[FR].getPosition(),
-              new Rotation2d(subsystem.swerveModules[FR].getEncoderPosition())),
+              subsystem.getSwerveModule(FR).getPosition(),
+              new Rotation2d(subsystem.getSwerveModule(FR).getEncoderPosition())),
           new SwerveModulePosition(
-              subsystem.swerveModules[BL].getPosition(),
-              new Rotation2d(subsystem.swerveModules[BL].getEncoderPosition())),
+              subsystem.getSwerveModule(BL).getPosition(),
+              new Rotation2d(subsystem.getSwerveModule(BL).getEncoderPosition())),
           new SwerveModulePosition(
-              subsystem.swerveModules[BR].getPosition(),
-              new Rotation2d(subsystem.swerveModules[BR].getEncoderPosition())),
+              subsystem.getSwerveModule(BR).getPosition(),
+              new Rotation2d(subsystem.getSwerveModule(BR).getEncoderPosition())),
         },
         pos);
   }
