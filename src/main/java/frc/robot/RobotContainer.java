@@ -5,12 +5,15 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
+
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.commands.DriveController;
+import frc.robot.commands.RumbleCommandStart;
+import frc.robot.commands.RumbleCommandStop;
 import frc.robot.commands.toSpeaker;
 
 public class RobotContainer {
@@ -30,10 +33,9 @@ public class RobotContainer {
         configureBindings();
 
         NamedCommands.registerCommand("StopDriving", drive.stopDriving());
-        NamedCommands.registerCommand("RumbleCommantStart", new RumbleCommandStart(armController));
-        NamedCommands.registerCommand("RumbleCommantStop", new RumbleCommandStop(armController));
+        NamedCommands.registerCommand("RumbleCommantStart", new RumbleCommandStart(driveController));
+        NamedCommands.registerCommand("RumbleCommantStop", new RumbleCommandStop(driveController));
 
-        this.pathChooser = new SendableChooser<PathPlannerPath>();
         this.pathAutonChooser = new SendableChooser<String>();
 
         this.pathAutonChooser.setDefaultOption("Test Auto", "testAuto");
