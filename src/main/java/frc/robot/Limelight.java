@@ -18,10 +18,7 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.CanId.Swerve;
 import frc.robot.LimelightHelpers.PoseEstimate;
-// import frc.robot.commands.Auton.Shooter;
-// import frc.robot.commands.Teleop.ShootCommand;
 import frc.robot.subsystems.SwerveSubsystem;
-import frc.robot.subsystems.SwerveSubsystem.SwerveRequest;
 
 public class Limelight extends SubsystemBase{
   private NetworkTable table;
@@ -206,7 +203,7 @@ public class Limelight extends SubsystemBase{
       double pos = targetPoseYaw;
       System.out.println(pos);
       double rotation = turnController.calculate(pos);
-      d.drive(new SwerveRequest(rotation, 0, 0), false);
+      d.drive(rotation, 0, 0, false);
     },
     (_unused) -> {
 

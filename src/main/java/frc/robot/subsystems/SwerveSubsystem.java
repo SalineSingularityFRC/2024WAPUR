@@ -2,13 +2,11 @@ package frc.robot.subsystems;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.*;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
-
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -18,50 +16,41 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
-import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Limelight;
-import frc.robot.Robot;
 import frc.robot.SwerveClasses.SwerveModule;
 import frc.robot.SwerveClasses.SwerveOdometry;
-import frc.robot.SwerveClasses.Vector;
-
-// import com.kauailabs.navx.frc.AHRS;
-// import frc.robot.DumbNavXClasses.NavX;
 
 /*
  * This class provides functions to drive at a given angle and direction,
  * and performs the calculations required to achieve that
  */
-public class SwerveSubsystem extends SubsystemBase implements Subsystem {
-  // public class SwerveSubsystem implements UpdateManager.Updatable {
+public class SwerveSubsystem extends SubsystemBase {
+
   /*
    * This class should own the pidgeon 2.0 IMU gyroscope that we will be using and
    * a dictionary that will house
    * all of our SwerveModules
    */
-  public Pigeon2 gyro;
+  private Pigeon2 gyro;
 
   private final int FL = 0;
   private final int FR = 1;
   private final int BL = 2;
   private final int BR = 3;
 
-  public SwerveModule[] swerveModules = new SwerveModule[4];
-  public final Vector[] vectorKinematics = new Vector[4];
+  private SwerveModule[] swerveModules = new SwerveModule[4];
+  private final Translation2d[] vectorKinematics = new Translation2d[4];
 
   private final SwerveDriveKinematics swerveDriveKinematics;
   private ChassisSpeeds chassisSpeeds;
-  public double gyroZero = 0;
+  private double gyroZero = 0;
 
-  private double targetAngle = Double.MAX_VALUE;
-  public SwerveOdometry odometry;
-  private double startingAngle;
+  private SwerveOdometry odometry;
 
   /*
    * This constructor should create an instance of the pidgeon class, and should
@@ -70,20 +59,14 @@ public class SwerveSubsystem extends SubsystemBase implements Subsystem {
    * Use values from the Constants.java class
    */
   public SwerveSubsystem() {
-    // gyro = new NavX(Port.kMXP);
     gyro = new Pigeon2(Constants.CanId.CanCoder.GYRO, Constants.Canbus.DRIVE_TRAIN);
 
-    vectorKinematics[FL] = new Vector(Constants.Measurement.WHEEL_BASE / 2, Constants.Measurement.TRACK_WIDTH / 2);
-    vectorKinematics[FR] = new Vector(Constants.Measurement.WHEEL_BASE / 2, -Constants.Measurement.TRACK_WIDTH / 2);
-    vectorKinematics[BL] = new Vector(-Constants.Measurement.WHEEL_BASE / 2, Constants.Measurement.TRACK_WIDTH / 2);
-    vectorKinematics[BR] = new Vector(-Constants.Measurement.WHEEL_BASE / 2, -Constants.Measurement.TRACK_WIDTH / 2);
+    vectorKinematics[FL] = new Translation2d(Constants.Measurement.WHEEL_BASE / 2, Constants.Measurement.TRACK_WIDTH / 2);
+    vectorKinematics[FR] = new Translation2d(Constants.Measurement.WHEEL_BASE / 2, -Constants.Measurement.TRACK_WIDTH / 2);
+    vectorKinematics[BL] = new Translation2d(-Constants.Measurement.WHEEL_BASE / 2, Constants.Measurement.TRACK_WIDTH / 2);
+    vectorKinematics[BR] = new Translation2d(-Constants.Measurement.WHEEL_BASE / 2, -Constants.Measurement.TRACK_WIDTH / 2);
 
-    Translation2d[] wheel = new Translation2d[4];
-    for (int i = 0; i < vectorKinematics.length; i++) {
-      wheel[i] = new Translation2d(vectorKinematics[i].x, vectorKinematics[i].y);
-    }
-
-    swerveDriveKinematics = new SwerveDriveKinematics(wheel);
+    swerveDriveKinematics = new SwerveDriveKinematics(vectorKinematics);
 
     chassisSpeeds = new ChassisSpeeds();
     swerveModules[FL] = new SwerveModule(
@@ -123,18 +106,13 @@ public class SwerveSubsystem extends SubsystemBase implements Subsystem {
         Constants.Inverted.ANGLE,
         "BR");
 
-    odometry = new SwerveOdometry(this);
+    odometry = new SwerveOdometry(this, vectorKinematics);
     odometry.resetPosition();
     Consumer<ChassisSpeeds> consumer_chasis = ch_speed -> {
-      // double ySpeed = ch_speed.vyMetersPerSecond;
-      // ch_speed.vyMetersPerSecond = -ch_speed.vxMetersPerSecond;
-      // ch_speed.vxMetersPerSecond = ySpeed;
-      // ch_speed.omegaRadiansPerSecond = -ch_speed.omegaRadiansPerSecond;
       SwerveModuleState[] modules = swerveDriveKinematics.toSwerveModuleStates(ch_speed);
       setModuleStates(modules);
     };
     Supplier<ChassisSpeeds> supplier_chasis = () -> {
-
       ChassisSpeeds temp = getChassisSpeed();
       return temp;
     };
@@ -143,7 +121,6 @@ public class SwerveSubsystem extends SubsystemBase implements Subsystem {
       return odometry.position();
     };
     Consumer<Pose2d> consumer_position = pose -> {
-
       odometry.setPosition(pose);
     };
 
@@ -166,12 +143,6 @@ public class SwerveSubsystem extends SubsystemBase implements Subsystem {
             new ReplanningConfig() // Default path replanning config. See the API for the options here
         ),
         () -> {
-          // Enum alliance = Alliance.Blue;
-          // Boolean supplier that controls when the path will be mirrored for the red
-          // alliance
-          // This will flip the path being followed to the red side of the field.
-          // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
-
           var alliance = DriverStation.getAlliance();
           if (alliance.isPresent()) {
             return alliance.get() == DriverStation.Alliance.Red;
@@ -182,19 +153,11 @@ public class SwerveSubsystem extends SubsystemBase implements Subsystem {
     );
   }
 
-  public static class SwerveRequest { // this class represents what our controller is telling our robot to do
-    public double rotation;
-    public Vector movement;
-
-    public SwerveRequest(double rotation, double x, double y) {
-      this.rotation = rotation;
-      this.movement = new Vector(x, y);
-    }
-  }
-
   public void drive(
-      SwerveRequest swerveRequest,
-      boolean fieldCentric) { // takes in the inputs from the controller
+          double rotation,
+          double x,
+          double y,
+          boolean fieldCentric) { // takes in the inputs from the controller
     double currentRobotAngle = getRobotAngle();
 
     // this is to make sure if both the joysticks are at neutral position, the robot
@@ -202,32 +165,28 @@ public class SwerveSubsystem extends SubsystemBase implements Subsystem {
     // don't move or turn at all
     // 0.05 value can be increased if the joystick is increasingly inaccurate at
     // neutral position
-    SmartDashboard.putNumber("Swerve X: ", swerveRequest.movement.x);
-    SmartDashboard.putNumber("Swerve Y: ", swerveRequest.movement.y);
-    SmartDashboard.putNumber("Swerve R: ", swerveRequest.rotation);
-    if (Math.abs(swerveRequest.movement.x) < 0.07
-        && Math.abs(swerveRequest.movement.y) < 0.07
-        && Math.abs(swerveRequest.rotation) < 0.05) {
+    SmartDashboard.putNumber("Swerve X: ", x);
+    SmartDashboard.putNumber("Swerve Y: ", y);
+    SmartDashboard.putNumber("Swerve R: ", rotation);
+    if (Math.abs(x) < 0.07
+        && Math.abs(y) < 0.07
+        && Math.abs(rotation) < 0.05) {
 
-      targetAngle = Double.MAX_VALUE;
-
-      for (int i = 0; i < swerveModules.length; i++) {
-        swerveModules[i].coast();
-      }
+      this.stop();
       return;
     }
 
-    double x = swerveRequest.movement.x;
-    double y = swerveRequest.movement.y;
+    double robotX = x; 
+    double robotY = y;
     if (fieldCentric) {
       double difference = -(currentRobotAngle % (2 * Math.PI));
-      x = -swerveRequest.movement.y * Math.sin(difference)
-          + swerveRequest.movement.x * Math.cos(difference);
-      y = swerveRequest.movement.y * Math.cos(difference)
-          + swerveRequest.movement.x * Math.sin(difference);
+      robotX = -y * Math.sin(difference)
+          + x * Math.cos(difference);
+      robotY = y * Math.cos(difference)
+          + x * Math.sin(difference);
     }
 
-    this.chassisSpeeds = new ChassisSpeeds(x, y, swerveRequest.rotation);
+    this.chassisSpeeds = new ChassisSpeeds(robotX, robotY, rotation);
 
     SwerveModuleState[] modules = swerveDriveKinematics.toSwerveModuleStates(chassisSpeeds);
     setModuleStates(modules);
@@ -261,7 +220,6 @@ public class SwerveSubsystem extends SubsystemBase implements Subsystem {
     states[FR] = swerveModules[FR].getState();
     states[BL] = swerveModules[BL].getState();
     states[BR] = swerveModules[BR].getState();
-
     return states;
   }
 
@@ -270,10 +228,8 @@ public class SwerveSubsystem extends SubsystemBase implements Subsystem {
    * from the pidgeon 2.0
    */
   public double getRobotAngle() {
-    // return ((360 - gyro.getAngle().toDegrees()) * Math.PI) / 180; // for NavX
     return -(((gyro.getAngle() - gyroZero)) * Math.PI)
         / 180; // returns in counterclockwise hence why 360 minus
-
     // it is gyro.getAngle() - 180 because the pigeon for this robot is facing
     // backwards
   }
@@ -331,7 +287,7 @@ public class SwerveSubsystem extends SubsystemBase implements Subsystem {
 
             SmartDashboard.putNumber("tx in alignToTagCommand", tx);
 
-            drive(new SwerveRequest(-feedforward.calculate(tx) + rotationController.calculate(tx), 0, 0), true);
+            drive(-feedforward.calculate(tx) + rotationController.calculate(tx), 0, 0, true);
           }
         },
         (_unused) -> {
@@ -358,7 +314,7 @@ public class SwerveSubsystem extends SubsystemBase implements Subsystem {
         () -> {
           double distance = lime.getDistanceToTagInFeet();
 
-          drive(new SwerveRequest(0, -feedforward.calculate(distance) + driveController.calculate(distance), 0), false);
+          drive(0, -feedforward.calculate(distance) + driveController.calculate(distance), 0, false);
         },
         (_unused) -> {
 
@@ -444,8 +400,9 @@ public class SwerveSubsystem extends SubsystemBase implements Subsystem {
 
           if (lime.isTagFound()) {
             drive(
-                new SwerveRequest(- rotationFeedForward.calculate(tx) + rotationController.calculate(tx),
-                    -driveFeedForward.calculate(distance) + driveSpeed, 0),
+                -rotationFeedForward.calculate(tx) + rotationController.calculate(tx),
+                -driveFeedForward.calculate(distance) + driveSpeed,
+                0,
                 false);
           }
         },
@@ -491,8 +448,9 @@ public class SwerveSubsystem extends SubsystemBase implements Subsystem {
 
           if (lime.isTagFound()) {
             drive(
-                new SwerveRequest(rotationFeedForward.calculate(gyro.getAngle() - 270) - rotationController.calculate(gyro.getAngle() - 270),
-                    -driveFeedForward.calculate(distance) + driveSpeed, 0),
+                rotationFeedForward.calculate(gyro.getAngle() - 270) - rotationController.calculate(gyro.getAngle() - 270),
+                -driveFeedForward.calculate(distance) + driveSpeed,
+                0,
                 false);
           }
         },
@@ -524,6 +482,14 @@ public class SwerveSubsystem extends SubsystemBase implements Subsystem {
         });
   }
 
+  private void stop() {
+      swerveModules[FR].stopDriving();
+      swerveModules[FL].stopDriving();
+      swerveModules[BR].stopDriving();
+      swerveModules[BL].stopDriving();
+  }
+      
+
   public Command stopDriving() {
     return runOnce(
         () -> {
@@ -532,10 +498,7 @@ public class SwerveSubsystem extends SubsystemBase implements Subsystem {
           // SwerveModuleState[] modules =
           // swerveDriveKinematics.toSwerveModuleStates(chassisSpeeds);
           // setModuleStates(modules);
-          swerveModules[FR].driveMotor.stopMotor();
-          swerveModules[FL].driveMotor.stopMotor();
-          swerveModules[BR].driveMotor.stopMotor();
-          swerveModules[BL].driveMotor.stopMotor();
+          this.stop();
         });
   }
 
@@ -543,7 +506,6 @@ public class SwerveSubsystem extends SubsystemBase implements Subsystem {
     // gyro.reset();
     gyroZero = gyro.getAngle();
     odometry.resetPosition();
-    this.startingAngle = getRobotAngle();
   }
 
   public SwerveModule getSwerveModule(int module) {
