@@ -9,11 +9,13 @@ import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -44,6 +46,7 @@ public class SwerveSubsystem extends SubsystemBase {
   private final int BR = 3;
 
   private SwerveModule[] swerveModules = new SwerveModule[4];
+  private SwerveModulePosition[] swerveModulePositions = new SwerveModulePosition[4];
   private final Translation2d[] vectorKinematics = new Translation2d[4];
 
   private final SwerveDriveKinematics swerveDriveKinematics;
@@ -51,6 +54,8 @@ public class SwerveSubsystem extends SubsystemBase {
   private double gyroZero = 0;
 
   private SwerveOdometry odometry;
+
+  private final SwerveDrivePoseEstimator m_poseEstimator;
 
   /*
    * This constructor should create an instance of the pidgeon class, and should
@@ -108,17 +113,30 @@ public class SwerveSubsystem extends SubsystemBase {
 
     odometry = new SwerveOdometry(this, vectorKinematics);
     odometry.resetPosition();
-    Consumer<ChassisSpeeds> consumer_chasis = ch_speed -> {
-      SwerveModuleState[] modules = swerveDriveKinematics.toSwerveModuleStates(ch_speed);
-      setModuleStates(modules);
-    };
+
+    swerveModulePositions[FL] = new SwerveModulePosition(swerveModules[FL].getPosition(), new Rotation2d(swerveModules[FL].getEncoderPosition()));
+    swerveModulePositions[FR] = new SwerveModulePosition(swerveModules[FL].getPosition(), new Rotation2d(swerveModules[FL].getEncoderPosition()));
+    swerveModulePositions[BL] = new SwerveModulePosition(swerveModules[FL].getPosition(), new Rotation2d(swerveModules[FL].getEncoderPosition()));
+    swerveModulePositions[BR] = new SwerveModulePosition(swerveModules[FL].getPosition(), new Rotation2d(swerveModules[FL].getEncoderPosition()));
+
+    m_poseEstimator =
+      new SwerveDrivePoseEstimator(
+        swerveDriveKinematics,
+        new Rotation2d(getRobotAngle()),
+        swerveModulePositions,
+        new Pose2d(0,0, new Rotation2d(0)) // Replace later with potentially limelight data
+      );
+
     Supplier<ChassisSpeeds> supplier_chasis = () -> {
       ChassisSpeeds temp = getChassisSpeed();
       return temp;
     };
+    Consumer<ChassisSpeeds> consumer_chasis = ch_speed -> {
+      SwerveModuleState[] modules = swerveDriveKinematics.toSwerveModuleStates(ch_speed);
+      setModuleStates(modules);
+    };
     Supplier<Pose2d> supplier_position = () -> {
-      SmartDashboard.putNumber("Rotation", odometry.getRotation());
-      return odometry.position();
+      return m_poseEstimator.getEstimatedPosition();
     };
     Consumer<Pose2d> consumer_position = pose -> {
       odometry.setPosition(pose);
@@ -126,6 +144,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
     SwerveModuleState[] modules = swerveDriveKinematics.toSwerveModuleStates(getChassisSpeed());
     setModuleStates(modules);
+
 
     AutoBuilder.configureHolonomic(
         supplier_position, // Robot pose supplier
@@ -198,6 +217,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
   public void periodic() {
     odometry.update();
+    m_poseEstimator.update(new Rotation2d(getRobotAngle()), getSwerveModulePositions());
   }
 
   public void disabledPeriodic() {
@@ -221,6 +241,15 @@ public class SwerveSubsystem extends SubsystemBase {
     states[BL] = swerveModules[BL].getState();
     states[BR] = swerveModules[BR].getState();
     return states;
+  }
+
+  public SwerveModulePosition[] getSwerveModulePositions() {
+    SwerveModulePosition[] positions = new SwerveModulePosition[4];
+    positions[FL] = new SwerveModulePosition(swerveModules[FL].getPosition(), new Rotation2d(swerveModules[FL].getEncoderPosition()));
+    positions[FR] = new SwerveModulePosition(swerveModules[FR].getPosition(), new Rotation2d(swerveModules[FR].getEncoderPosition()));
+    positions[BL] = new SwerveModulePosition(swerveModules[BL].getPosition(), new Rotation2d(swerveModules[BL].getEncoderPosition()));
+    positions[BR] = new SwerveModulePosition(swerveModules[BR].getPosition(), new Rotation2d(swerveModules[BR].getEncoderPosition()));
+    return positions;
   }
 
   /*
