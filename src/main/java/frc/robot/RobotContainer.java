@@ -38,7 +38,8 @@ public class RobotContainer {
 
         this.pathAutonChooser = new SendableChooser<String>();
 
-        this.pathAutonChooser.setDefaultOption("Test Auto", "testAuto");
+        this.pathAutonChooser.setDefaultOption("Noah's Auto", "New Auto");
+        this.pathAutonChooser.setDefaultOption("posEstimator Test", "Short Auto");
         SmartDashboard.putData("Auton Choices", pathAutonChooser);
     }
 
@@ -80,10 +81,6 @@ public class RobotContainer {
 
     protected void updateLimelight() {
         this.lime.update();
-    }
-
-    protected void updateOdometryFromVision() {
-        this.drive.visionUpdateCommand();
     }
 
 }

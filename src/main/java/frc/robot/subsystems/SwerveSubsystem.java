@@ -54,9 +54,6 @@ public class SwerveSubsystem extends SubsystemBase {
   private double gyroZero = 0;
 
   private SwerveOdometry odometry;
-
-  private final SwerveDrivePoseEstimator m_poseEstimator;
-
   /*
    * This constructor should create an instance of the pidgeon class, and should
    * construct four copies of the
@@ -114,19 +111,6 @@ public class SwerveSubsystem extends SubsystemBase {
     odometry = new SwerveOdometry(this, vectorKinematics);
     odometry.resetPosition();
 
-    swerveModulePositions[FL] = new SwerveModulePosition(swerveModules[FL].getPosition(), new Rotation2d(swerveModules[FL].getEncoderPosition()));
-    swerveModulePositions[FR] = new SwerveModulePosition(swerveModules[FL].getPosition(), new Rotation2d(swerveModules[FL].getEncoderPosition()));
-    swerveModulePositions[BL] = new SwerveModulePosition(swerveModules[FL].getPosition(), new Rotation2d(swerveModules[FL].getEncoderPosition()));
-    swerveModulePositions[BR] = new SwerveModulePosition(swerveModules[FL].getPosition(), new Rotation2d(swerveModules[FL].getEncoderPosition()));
-
-    m_poseEstimator =
-      new SwerveDrivePoseEstimator(
-        swerveDriveKinematics,
-        new Rotation2d(getRobotAngle()),
-        swerveModulePositions,
-        new Pose2d(0,0, new Rotation2d(0)) // Replace later with potentially limelight data
-      );
-
     Supplier<ChassisSpeeds> supplier_chasis = () -> {
       ChassisSpeeds temp = getChassisSpeed();
       return temp;
@@ -136,7 +120,7 @@ public class SwerveSubsystem extends SubsystemBase {
       setModuleStates(modules);
     };
     Supplier<Pose2d> supplier_position = () -> {
-      return m_poseEstimator.getEstimatedPosition();
+      return odometry.getEstimatedPosition();
     };
     Consumer<Pose2d> consumer_position = pose -> {
       odometry.setPosition(pose);
@@ -144,7 +128,6 @@ public class SwerveSubsystem extends SubsystemBase {
 
     SwerveModuleState[] modules = swerveDriveKinematics.toSwerveModuleStates(getChassisSpeed());
     setModuleStates(modules);
-
 
     AutoBuilder.configureHolonomic(
         supplier_position, // Robot pose supplier
@@ -217,7 +200,6 @@ public class SwerveSubsystem extends SubsystemBase {
 
   public void periodic() {
     odometry.update();
-    m_poseEstimator.update(new Rotation2d(getRobotAngle()), getSwerveModulePositions());
   }
 
   public void disabledPeriodic() {
@@ -243,15 +225,6 @@ public class SwerveSubsystem extends SubsystemBase {
     return states;
   }
 
-  public SwerveModulePosition[] getSwerveModulePositions() {
-    SwerveModulePosition[] positions = new SwerveModulePosition[4];
-    positions[FL] = new SwerveModulePosition(swerveModules[FL].getPosition(), new Rotation2d(swerveModules[FL].getEncoderPosition()));
-    positions[FR] = new SwerveModulePosition(swerveModules[FR].getPosition(), new Rotation2d(swerveModules[FR].getEncoderPosition()));
-    positions[BL] = new SwerveModulePosition(swerveModules[BL].getPosition(), new Rotation2d(swerveModules[BL].getEncoderPosition()));
-    positions[BR] = new SwerveModulePosition(swerveModules[BR].getPosition(), new Rotation2d(swerveModules[BR].getEncoderPosition()));
-    return positions;
-  }
-
   /*
    * This function returns the angle (in radians) of the robot based on the value
    * from the pidgeon 2.0
@@ -263,18 +236,14 @@ public class SwerveSubsystem extends SubsystemBase {
     // backwards
   }
 
+  public double getAngularChassisSpeed() {
+    return gyro.getRate();
+  }
+
   public Command resetGyroCommand() {
     return runOnce(
         () -> {
           resetGyro();
-        });
-  }
-
-  public Command visionUpdateCommand() {
-    return run(
-        () -> {
-          odometry.visionUpdate();
-
         });
   }
 
