@@ -79,8 +79,8 @@ public class RobotContainer {
         return new PathPlannerAuto(this.pathAutonChooser.getSelected());
     }
 
-    protected void updateLimelight() {
-        this.lime.update();
+    protected void updateOdometry() {
+        this.drive.updateOdometry();
     }
 
 }

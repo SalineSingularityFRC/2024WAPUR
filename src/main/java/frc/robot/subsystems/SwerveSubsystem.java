@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Limelight;
+import frc.robot.LimelightHelpers;
 import frc.robot.SwerveClasses.SwerveModule;
 import frc.robot.SwerveClasses.SwerveOdometry;
 
@@ -203,7 +204,10 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   public void disabledPeriodic() {
+  }
 
+  public void updateOdometry() {
+      odometry.update();
   }
 
   /*
