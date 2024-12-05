@@ -17,6 +17,11 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructPublisher;
+import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -55,6 +60,8 @@ public class SwerveSubsystem extends SubsystemBase {
   private double gyroZero = 0;
 
   private SwerveOdometry odometry;
+
+  private StructPublisher<Pose2d> publisher;
   /*
    * This constructor should create an instance of the pidgeon class, and should
    * construct four copies of the
@@ -154,6 +161,9 @@ public class SwerveSubsystem extends SubsystemBase {
         },
         this // Reference to this subsystem to set requirements
     );
+
+    publisher = NetworkTableInstance.getDefault()
+      .getStructTopic("Final Odometry Position", Pose2d.struct).publish();
   }
 
   public void drive(
@@ -201,6 +211,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
   public void periodic() {
     odometry.update();
+    publisher.set(odometry.getEstimatedPosition());
   }
 
   public void disabledPeriodic() {
