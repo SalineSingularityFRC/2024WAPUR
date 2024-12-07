@@ -45,6 +45,17 @@ public final class Constants {
       public static final int SENSOR1 = 50;
       public static final int SENSOR2 = 49;
     }
+
+    public static final class Arm {
+      public static final class Motor {
+        public static final int BASE1 = 30;
+        public static final int BASE2 = 31;
+        public static final int SMALL = 32;
+        public static final int INTAKE1 = 33;
+        public static final int INTAKE2 = 34;
+      }
+    }
+
   }
 
   public static final class Position {
