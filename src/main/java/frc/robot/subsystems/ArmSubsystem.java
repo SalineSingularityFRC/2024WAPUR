@@ -40,6 +40,7 @@ public class ArmSubsystem extends SubsystemBase {
   // Talon Setup
   private TalonFX baseArmMotor1;
   private TalonFX baseArmMotor2;
+  private TalonFX smallArmMotor;
 
   private PositionVoltage positionTargetPreset = new PositionVoltage(0).withSlot(0).withEnableFOC(true);
 
@@ -64,23 +65,19 @@ public class ArmSubsystem extends SubsystemBase {
   public double baseArmMotorPosition;
   public double smallArmMotorPosition;
 
-  // Neo Setup
-  private CANSparkMax smallArmMotor;
-  private SparkPIDController smallArmPidController;
-  private RelativeEncoder smallArmEncoder;
-  public double kP, kI, kD, kIz, kFF, kMaxOutput, kMinOutput, maxRPM;
-
   public ArmSubsystem() {
 
-    // Talon Portion
     baseArmMotor1 = new TalonFX(Constants.CanId.Arm.Motor.BASE1, Constants.Canbus.DEFAULT);
     baseArmMotor2 = new TalonFX(Constants.CanId.Arm.Motor.BASE2, Constants.Canbus.DEFAULT);
+    smallArmMotor = new TalonFX(Constants.CanId.Arm.Motor.SMALL, Constants.Canbus.DEFAULT);
 
     // Factory reset before applying configs
     baseArmMotor1.getConfigurator().apply(new TalonFXConfiguration());
     baseArmMotor1.getConfigurator().apply(new TalonFXConfiguration());
+    smallArmMotor.getConfigurator().apply(new TalonFXConfiguration());
 
     baseArmMotor2.setControl(new Follower(Constants.CanId.Arm.Motor.BASE1, true));
+
 
     HardwareLimitSwitchConfigs limitSwitchConfigs = new HardwareLimitSwitchConfigs();
     limitSwitchConfigs.ReverseLimitAutosetPositionEnable = true;
@@ -108,42 +105,21 @@ public class ArmSubsystem extends SubsystemBase {
     baseArmMotor1.getConfigurator().apply(limitSwitchConfigs);
     baseArmMotor1.getConfigurator().apply(currentLimitsConfigs);
 
+    smallArmMotor.getConfigurator().apply(slot0ConfigsBig);
+    smallArmMotor.getConfigurator().apply(slot1ConfigsBig);
+    smallArmMotor.getConfigurator().apply(currentLimitsConfigs);
+
     motionMagicConfigsPresets = talonFXConfigsPreset.MotionMagic;
     motionMagicConfigsPresets.MotionMagicCruiseVelocity = 40 / 30;
     motionMagicConfigsPresets.MotionMagicAcceleration = 100 / 80;
     motionMagicConfigsPresets.MotionMagicJerk = 900 / 60;
 
     baseArmMotor1.getConfigurator().apply(motionMagicConfigsPresets);
+    smallArmMotor.getConfigurator().apply(motionMagicConfigsPresets);
 
     // Global Position Value
     baseArmMotorPosition = baseArmMotor1.getPosition().getValue();
-
-    // Neo Portion
-    smallArmMotor = new CANSparkMax(Constants.CanId.Arm.Motor.SMALL, MotorType.kBrushless);
-    smallArmMotor.restoreFactoryDefaults();
-    smallArmPidController = smallArmMotor.getPIDController();
-    smallArmEncoder = smallArmMotor.getEncoder();
-
-    // PID coefficients
-    kP = 6e-5; 
-    kI = 0;
-    kD = 0; 
-    kIz = 0; 
-    kFF = 0.000015; 
-    kMaxOutput = 1; 
-    kMinOutput = -1;
-    maxRPM = 5700;
-
-    // set PID coefficients
-    smallArmPidController.setP(kP);
-    smallArmPidController.setI(kI);
-    smallArmPidController.setD(kD);
-    smallArmPidController.setIZone(kIz);
-    smallArmPidController.setFF(kFF);
-    smallArmPidController.setOutputRange(kMinOutput, kMaxOutput);
-
-    // Global Position Value
-    smallArmMotorPosition = smallArmEncoder.getPosition();
+    smallArmMotorPosition = smallArmMotor.getPosition().getValue();
 
     setBrakeMode();
   }
@@ -152,8 +128,8 @@ public class ArmSubsystem extends SubsystemBase {
     baseArmMotor1.setControl(dutyCycleOut.withOutput(baseArmspeed).withEnableFOC(true));
     baseArmMotorPosition = baseArmMotor1.getPosition().getValue();
 
-    smallArmPidController.setReference(smallArmspeed, ControlType.kDutyCycle);
-    smallArmMotorPosition = smallArmEncoder.getPosition();
+    smallArmMotor.setControl(dutyCycleOut.withOutput(smallArmspeed).withEnableFOC(true));
+    smallArmMotorPosition = baseArmMotor1.getPosition().getValue();
   }
 
   public void setPosition(double baseArmAngle, double smallArmAngle) {
@@ -161,7 +137,8 @@ public class ArmSubsystem extends SubsystemBase {
         positionTargetPreset.withPosition(baseArmAngle).withFeedForward(0.1).withSlot(0));
     baseArmMotorPosition = baseArmAngle;
 
-    smallArmPidController.setReference(smallArmAngle, ControlType.kPosition);
+    smallArmMotor.setControl(
+        positionTargetPreset.withPosition(smallArmAngle).withFeedForward(0.1).withSlot(0));
     smallArmMotorPosition = smallArmAngle;
   }
 
@@ -170,7 +147,7 @@ public class ArmSubsystem extends SubsystemBase {
     baseArmMotor1.getConfigurator().apply(motorOutputConfigs);
     baseArmMotor2.getConfigurator().apply(motorOutputConfigs);
 
-    smallArmMotor.setIdleMode(IdleMode.kBrake);
+    smallArmMotor.getConfigurator().apply(motorOutputConfigs);
   }
 
   public void periodic() {

@@ -19,24 +19,24 @@ public final class Constants {
   
     public static final class CanCoder {
       public static final int GYRO = 20;
-      public static final int FL = 1;
-      public static final int FR = 2;
-      public static final int BL = 3;
-      public static final int BR = 4;
+      public static final int FL = 43;
+      public static final int FR = 44;
+      public static final int BL = 42;
+      public static final int BR = 41;
     }
 
     public static final class Swerve {
       public static final class Angle {
-        public static final int FL = 18;
-        public static final int FR = 17;
-        public static final int BL = 13;
-        public static final int BR = 15;
+        public static final int FL = 15;
+        public static final int FR = 16;
+        public static final int BL = 11;
+        public static final int BR = 18;
       }
 
       public static final class Drive {
-        public static final int FL = 12;
-        public static final int FR = 11;
-        public static final int BL = 16;
+        public static final int FL = 17;
+        public static final int FR = 12;
+        public static final int BL = 13;
         public static final int BR = 14;
       }
     }
