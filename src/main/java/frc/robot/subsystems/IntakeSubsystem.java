@@ -16,26 +16,31 @@ import frc.robot.Constants;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
 import com.revrobotics.CANSparkBase.IdleMode;
-import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkFlex;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkBase.ControlType;
 
 public class IntakeSubsystem extends SubsystemBase {
-  private CANSparkMax intakeMotor1;
-  private CANSparkMax intakeMotor2;
+  private CANSparkFlex intakeMotor1;
+  private CANSparkFlex intakeMotor2;
   private SparkPIDController m_pidController;
+  private SparkPIDController m_pidController2;
   private RelativeEncoder m_encoder;
+  private RelativeEncoder m_encoder2;
   public double kP, kI, kD, kIz, kFF, kMaxOutput, kMinOutput;
 
   public IntakeSubsystem() {
 
-    intakeMotor1 = new CANSparkMax(Constants.CanId.Arm.Motor.INTAKE1, MotorType.kBrushless);
+    intakeMotor1 = new CANSparkFlex(Constants.CanId.Arm.Motor.INTAKE1, MotorType.kBrushless);
     intakeMotor1.restoreFactoryDefaults();
     m_pidController = intakeMotor1.getPIDController();
     m_encoder = intakeMotor1.getEncoder();
 
-    intakeMotor2 = new CANSparkMax(Constants.CanId.Arm.Motor.INTAKE2, MotorType.kBrushless);
+    intakeMotor2 = new CANSparkFlex(Constants.CanId.Arm.Motor.INTAKE2, MotorType.kBrushless);
     intakeMotor2.restoreFactoryDefaults();
+    m_pidController2 = intakeMotor2.getPIDController();
+    m_encoder2 = intakeMotor2.getEncoder();
+
     intakeMotor2.follow(intakeMotor1);
     intakeMotor2.setInverted(true);
 
@@ -59,11 +64,19 @@ public class IntakeSubsystem extends SubsystemBase {
     setBrakeMode();
   }
 
+  public void periodic() {
+    SmartDashboard.putNumber("Intake Speed of NEO1", getIntakeSpeed());
+    SmartDashboard.putNumber("Intake Speed of NEO2", m_encoder2.getVelocity() / 5676.0);
+    SmartDashboard.putNumber("Position of NEO1 (rotations)", getPosition());
+    SmartDashboard.putNumber("Position of NEO2 (rotations)", m_encoder2.getPosition());
+  }
+
   /**
    * @param speed Desired speed between [-1,1]
    */
   public void setIntakeSpeed(double speed) {
     m_pidController.setReference(speed, ControlType.kDutyCycle);
+    //m_pidController2.setReference(speed, ControlType.kDutyCycle);
   }
 
   /**
@@ -72,6 +85,14 @@ public class IntakeSubsystem extends SubsystemBase {
   public double getIntakeSpeed() {
     //5676 is the free speed of the NEO in RPM
     return m_encoder.getVelocity() / 5676.0;
+  }
+
+  /**
+   * @return Speed of NEO between [-1,1]
+   */
+  public double getPosition() {
+    //5676 is the free speed of the NEO in RPM
+    return m_encoder.getPosition();
   }
 
   public void setBrakeMode() {

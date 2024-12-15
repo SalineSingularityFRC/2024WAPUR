@@ -174,7 +174,7 @@ public final class Constants {
     public static final double ROBOT_SPEED_DIVISOR = 2.5; // what the max speed should be divided by, 1 is max power
     public static final double SHOOTER = 65; // speed of the shooter in rotations per second
     public static final double AMPSHOOTER = 15; // speed of the shooter in rotations per second
-    public static final double INTAKE = 20; // rotations per second
+    public static final double INTAKE = 0.4; // speed but converting to rpm for kVelocity control
     public static final double ARM = 30; // rotations per second
     public static final double HOME = 0.2; // proportional
     public static final double CLIMBER = 280;

@@ -157,7 +157,8 @@ public class ArmSubsystem extends SubsystemBase {
   public Command stopArm() {
     return run(
         () -> {
-          maintainArmPosition();
+          maintainSmallArmPosition();
+          maintainBigArmPosition();
         });
   }
 
@@ -168,6 +169,13 @@ public class ArmSubsystem extends SubsystemBase {
         });
   }
 
+  public Command moveSmallArmForward() {
+    return run(
+        () -> {
+          setArmSpeed(0,Constants.Speed.ARMDUTYCYCLEUP);
+        });
+  }  
+
   public Command moveArmBackwards() {
     return run(
         () -> {
@@ -175,6 +183,12 @@ public class ArmSubsystem extends SubsystemBase {
         });
   }
 
+  public Command moveSmallArmBackwards() {
+    return run(
+        () -> {
+          setArmSpeed(0,-Constants.Speed.ARMDUTYCYCLEDOWN);
+        });
+  }
   // RunOne or Run
   public Command ampTarget() {
     return runOnce(() -> {
@@ -266,9 +280,15 @@ public class ArmSubsystem extends SubsystemBase {
     });
   }
 
-  public Command maintainArm() {
+  public Command maintainBigArm() {
     return run(() -> {
-      maintainArmPosition();
+      maintainBigArmPosition();
+    });
+  }
+
+  public Command maintainSmallArm() {
+    return run(() -> {
+      maintainSmallArmPosition();
     });
   }
 
@@ -284,11 +304,18 @@ public class ArmSubsystem extends SubsystemBase {
     return baseArmMotor1.getForwardLimit().getValue() != ForwardLimitValue.ClosedToGround;
   }
 
-  public void maintainArmPosition() {
+  public void maintainBigArmPosition() {
     // System.out.println("MAINTAIN");
     // baseArmMotor1.getConfigurator().apply(motionMagicConfigsPresets);
     baseArmMotor1.setControl(
-        positionTargetPreset.withPosition(baseArmMotorPosition).withFeedForward(0.03 * 12).withSlot(0));
+      positionTargetPreset.withPosition(baseArmMotorPosition).withFeedForward(0.03 * 12).withSlot(0));
+  }
+
+  public void maintainSmallArmPosition() {
+    // System.out.println("MAINTAIN");
+    // baseArmMotor1.getConfigurator().apply(motionMagicConfigsPresets);
+    smallArmMotor.setControl(
+      positionTargetPreset.withPosition(baseArmMotorPosition).withFeedForward(0.03 * 12).withSlot(0));
   }
 
   public double getPosition() {

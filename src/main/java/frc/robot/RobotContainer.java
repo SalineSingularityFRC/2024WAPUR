@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.subsystems.ArmSubsystem;
+import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.commands.DriveController;
 import frc.robot.commands.RumbleCommandStart;
@@ -21,15 +22,17 @@ public class RobotContainer {
 
     private SwerveSubsystem drive;
     private ArmSubsystem arm;
-    private Limelight lime;
+    //private Limelight lime;
+    private IntakeSubsystem intake;
     private CommandXboxController driveController;
     private SendableChooser<String> pathAutonChooser;
 
     protected RobotContainer() {
 
-        lime = new Limelight();
+        //lime = new Limelight();
         arm = new ArmSubsystem();
         drive = new SwerveSubsystem();
+        intake = new IntakeSubsystem();
 
         driveController = new CommandXboxController(Constants.Gamepad.Controller.DRIVE);
 
@@ -47,13 +50,29 @@ public class RobotContainer {
     }
 
     private void configureBindings() {
+        intake.setDefaultCommand(intake.stopIntaking());
+        arm.setDefaultCommand(arm.maintainBigArm());
+
         driveController.x().whileTrue(drive.resetGyroCommand());
 
-        driveController.b().whileTrue(
-                new toSpeaker(drive, lime)
-        );
+        //driveController.b().whileTrue(
+                //new toSpeaker(drive, lime)
+        //);
 
-        driveController.a().onTrue(arm.moveArmForward());
+        // Manual arm movement
+        driveController.povUp()
+                .and(arm::isNotAtTop)
+                .whileTrue(arm.moveArmForward());
+        driveController.povDown()
+                .and(arm::isNotAtBottom)
+                .whileTrue(arm.moveArmBackwards());
+        driveController.a()
+                .whileTrue(arm.moveSmallArmForward());
+        driveController.y()
+                .whileTrue(arm.moveSmallArmBackwards());
+        
+
+        driveController.povLeft().onTrue(intake.startIntake());
 
         driveController.povRight().onTrue(drive.xMode());
 
