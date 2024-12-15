@@ -3,25 +3,41 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.5,
-        "y": 6.5
+        "x": 1.2,
+        "y": 2.0
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.5,
-        "y": 6.282545889423622
+        "x": 2.1999999999999993,
+        "y": 2.0
+      },
+      "isLocked": false,
+      "linkedName": "WAPUR start"
+    },
+    {
+      "anchor": {
+        "x": 5.0,
+        "y": 1.9970891413607892
+      },
+      "prevControl": {
+        "x": 4.5338134806206325,
+        "y": 1.9666970877026786
+      },
+      "nextControl": {
+        "x": 5.650354834731646,
+        "y": 2.0394876625799134
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 1.5,
-        "y": 5.55
+        "x": 7.0,
+        "y": 3.5037014883257807
       },
       "prevControl": {
-        "x": 1.5,
-        "y": 5.85
+        "x": 7.02086692146471,
+        "y": 3.0237622946374696
       },
       "nextControl": null,
       "isLocked": false,
@@ -29,19 +45,7 @@
     }
   ],
   "rotationTargets": [],
-  "constraintZones": [
-    {
-      "name": "New Constraints Zone",
-      "minWaypointRelativePos": 0,
-      "maxWaypointRelativePos": 1.0,
-      "constraints": {
-        "maxVelocity": 3.0,
-        "maxAcceleration": 1.0,
-        "maxAngularVelocity": 540.0,
-        "maxAngularAcceleration": 720.0
-      }
-    }
-  ],
+  "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 0.9,
@@ -51,13 +55,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 180.0,
+    "rotation": 90.0,
     "rotateFast": false
   },
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 180.0,
+    "rotation": 90.0,
     "velocity": 0
   },
   "useDefaultConstraints": true

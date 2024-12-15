@@ -7,15 +7,34 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import au.grapplerobotics.LaserCan;
+import au.grapplerobotics.LaserCan.Measurement;
+import au.grapplerobotics.ConfigurationFailedException;
 
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
   private RobotContainer m_robotContainer;
+  private LaserCan laserCan1;
+  private LaserCan laserCan2;
 
   @Override
   public void robotInit() {
     m_robotContainer =
         new RobotContainer();
+
+        laserCan1 = m_robotContainer.laserCan1;
+        laserCan2 = m_robotContainer.laserCan2;
+
+        try {
+          laserCan1.setRangingMode(LaserCan.RangingMode.SHORT);
+          laserCan1.setRegionOfInterest(new LaserCan.RegionOfInterest(8, 8, 4, 4));
+          laserCan1.setTimingBudget(LaserCan.TimingBudget.TIMING_BUDGET_100MS);
+          laserCan2.setRangingMode(LaserCan.RangingMode.SHORT);
+          laserCan2.setRegionOfInterest(new LaserCan.RegionOfInterest(8, 8, 4, 4));
+          laserCan2.setTimingBudget(LaserCan.TimingBudget.TIMING_BUDGET_100MS);
+        } catch (ConfigurationFailedException e) {
+          System.out.println("Configuration failed! " + e);
+        }
   }
 
   @Override

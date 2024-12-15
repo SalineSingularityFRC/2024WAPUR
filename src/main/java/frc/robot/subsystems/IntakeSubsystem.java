@@ -41,8 +41,7 @@ public class IntakeSubsystem extends SubsystemBase {
     m_pidController2 = intakeMotor2.getPIDController();
     m_encoder2 = intakeMotor2.getEncoder();
 
-    intakeMotor2.follow(intakeMotor1);
-    intakeMotor2.setInverted(true);
+    intakeMotor2.follow(intakeMotor1, true);
 
     // PID coefficients
     kP = 0.1; 

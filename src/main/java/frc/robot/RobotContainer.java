@@ -11,30 +11,42 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.subsystems.ArmSubsystem;
+import frc.robot.subsystems.SmallArmSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.commands.DriveController;
 import frc.robot.commands.RumbleCommandStart;
 import frc.robot.commands.RumbleCommandStop;
 import frc.robot.commands.toSpeaker;
+import frc.robot.commands.Teleop.SensorIntake;
+import au.grapplerobotics.LaserCan;
 
 public class RobotContainer {
 
     private SwerveSubsystem drive;
-    private ArmSubsystem arm;
+    private ArmSubsystem bigArm;
+    private SmallArmSubsystem smallArm;
+    protected LaserCan laserCan1;
+    protected LaserCan laserCan2;
     //private Limelight lime;
     private IntakeSubsystem intake;
     private CommandXboxController driveController;
+    private CommandXboxController armController;
     private SendableChooser<String> pathAutonChooser;
 
     protected RobotContainer() {
 
         //lime = new Limelight();
-        arm = new ArmSubsystem();
+        bigArm = new ArmSubsystem();
+        smallArm = new SmallArmSubsystem();
         drive = new SwerveSubsystem();
         intake = new IntakeSubsystem();
 
         driveController = new CommandXboxController(Constants.Gamepad.Controller.DRIVE);
+        armController = new CommandXboxController(Constants.Gamepad.Controller.ARM);
+
+        laserCan1 = new LaserCan(Constants.CanId.LaserCan.SENSOR1);
+        laserCan2 = new LaserCan(Constants.CanId.LaserCan.SENSOR2);
 
         configureBindings();
 
@@ -44,37 +56,45 @@ public class RobotContainer {
 
         this.pathAutonChooser = new SendableChooser<String>();
 
-        this.pathAutonChooser.setDefaultOption("Noah's Auto", "New Auto");
-        this.pathAutonChooser.setDefaultOption("posEstimator Test", "Short Auto");
+        this.pathAutonChooser.setDefaultOption("WAPUR Auto Right", "WAPUR Auto Right");
+        this.pathAutonChooser.addOption("WAPUR Auto Left", "WAPUR Auto Left");
         SmartDashboard.putData("Auton Choices", pathAutonChooser);
     }
 
     private void configureBindings() {
         intake.setDefaultCommand(intake.stopIntaking());
-        arm.setDefaultCommand(arm.maintainBigArm());
+        bigArm.setDefaultCommand(bigArm.maintainArm());
+        smallArm.setDefaultCommand(smallArm.maintainSmallArm());
 
         driveController.x().whileTrue(drive.resetGyroCommand());
+
+        //Arm Controller
+        //Intake for arm controller
+        armController.a()
+                .whileTrue(new SensorIntake(intake, laserCan1, laserCan2)
+                .andThen(intake.stopIntaking().alongWith(new RumbleCommandStart(armController))));
+        armController.a().onFalse(new RumbleCommandStop(armController));
+        armController.b().whileTrue(intake.reverseIntake());
+        //armController.a().onFalse(new ReverseIntakeCommand(intake));
 
         //driveController.b().whileTrue(
                 //new toSpeaker(drive, lime)
         //);
 
-        // Manual arm movement
-        driveController.povUp()
-                .and(arm::isNotAtTop)
-                .whileTrue(arm.moveArmForward());
-        driveController.povDown()
-                .and(arm::isNotAtBottom)
-                .whileTrue(arm.moveArmBackwards());
-        driveController.a()
-                .whileTrue(arm.moveSmallArmForward());
-        driveController.y()
-                .whileTrue(arm.moveSmallArmBackwards());
+        // Manual bigArm movement
+        armController.povUp()
+                .and(bigArm::isNotAtTop)
+                .whileTrue(bigArm.moveArmForward());
+        armController.povDown()
+                .and(bigArm::isNotAtBottom)
+                .whileTrue(bigArm.moveArmBackwards());
+        armController.povLeft()
+                .whileTrue(smallArm.moveSmallArmForward());
+        armController.povRight()
+                .whileTrue(smallArm.moveSmallArmBackwards());
         
 
-        driveController.povLeft().onTrue(intake.startIntake());
-
-        driveController.povRight().onTrue(drive.xMode());
+        //driveController.povRight().onTrue(drive.xMode());
 
         drive.setDefaultCommand(
                 new DriveController(drive, () -> {
@@ -96,7 +116,7 @@ public class RobotContainer {
 
                         return driveController.getLeftX() * driveController.getLeftX();
                 },
-                        1.0));
+                        0.9, 3.0));
     }
 
     protected Command getAutonomousCommand() {

@@ -25,7 +25,7 @@ public class SensorIntake extends Command {
         
         if (measurement1 <= Constants.LaserCan.INTAKE_WIDTH_MM - Constants.LaserCan.INTAKE_TOLERANCE_MM_1
         && measurement1 != -1) {
-            intakeSubsystem.setIntakeSpeed(Constants.Speed.INTAKE/5);
+            intakeSubsystem.setIntakeSpeed(Constants.Speed.INTAKE/2);
         }
         else {
             intakeSubsystem.setIntakeSpeed(Constants.Speed.INTAKE);

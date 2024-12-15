@@ -9,10 +9,14 @@ import frc.robot.subsystems.SwerveSubsystem;
 public class DriveController extends Command {
     private final SwerveSubsystem m_swerve;
     private final DoubleSupplier m_rotation, m_x, m_y;
-    private double multiplier;
+    private double drive_multiplier;
+    private double turn_multiplier;
 
-    public DriveController(SwerveSubsystem swerve, DoubleSupplier rotation, DoubleSupplier x, DoubleSupplier y, double multiplier) {
-        this.multiplier = multiplier;
+    public DriveController(SwerveSubsystem swerve, DoubleSupplier rotation, 
+        DoubleSupplier x, DoubleSupplier y, double drive_multiplier, double turn_multiplier) {
+
+        this.drive_multiplier = drive_multiplier;
+        this.turn_multiplier = turn_multiplier;
         m_swerve = swerve;
         m_rotation = rotation;
         m_x = x;
@@ -29,9 +33,9 @@ public class DriveController extends Command {
         SmartDashboard.putNumber("Input Y", fixDecimalTo2Places(-m_y.getAsDouble()));
         SmartDashboard.putNumber("Input Rotation", fixDecimalTo2Places(-m_rotation.getAsDouble()));
         m_swerve.drive(
-                -m_rotation.getAsDouble() * multiplier,
-                -m_x.getAsDouble() * multiplier,
-                -m_y.getAsDouble() * multiplier,
+                -m_rotation.getAsDouble() * turn_multiplier,
+                -m_x.getAsDouble() * drive_multiplier,
+                -m_y.getAsDouble() * drive_multiplier,
                 true);
     }
   
