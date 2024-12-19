@@ -17,8 +17,8 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
@@ -62,6 +62,9 @@ public class SwerveSubsystem extends SubsystemBase {
   private SwerveOdometry odometry;
 
   private StructPublisher<Pose2d> publisher;
+
+  private NetworkTableInstance inst;
+  private NetworkTable table;
   /*
    * This constructor should create an instance of the pidgeon class, and should
    * construct four copies of the
@@ -69,6 +72,9 @@ public class SwerveSubsystem extends SubsystemBase {
    * Use values from the Constants.java class
    */
   public SwerveSubsystem() {
+    inst = NetworkTableInstance.getDefault();
+    table = inst.getTable("datatable");
+
     gyro = new Pigeon2(Constants.CanId.CanCoder.GYRO, Constants.Canbus.DRIVE_TRAIN);
 
     vectorKinematics[FL] = new Translation2d(Constants.Measurement.WHEEL_BASE / 2, Constants.Measurement.TRACK_WIDTH / 2);
@@ -162,8 +168,7 @@ public class SwerveSubsystem extends SubsystemBase {
         this // Reference to this subsystem to set requirements
     );
 
-    publisher = NetworkTableInstance.getDefault()
-      .getStructTopic("Final Odometry Position", Pose2d.struct).publish();
+    publisher = table.getStructTopic("Final Odometry Position", Pose2d.struct).publish();
   }
 
   public void drive(
