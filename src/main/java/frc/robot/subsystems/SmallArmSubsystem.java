@@ -137,28 +137,28 @@ public class SmallArmSubsystem extends SubsystemBase {
   public Command moveArmForward() {
     return run(
         () -> {
-          setArmSpeed(Constants.Speed.ARMDUTYCYCLEUP);
+          setArmSpeed(Constants.Speed.ARMDUTYCYCLEUPSMALL);
         });
   }
 
   public Command moveSmallArmForward() {
     return run(
         () -> {
-          setArmSpeed(Constants.Speed.ARMDUTYCYCLEUP);
+          setArmSpeed(Constants.Speed.ARMDUTYCYCLEUPSMALL);
         });
   }  
 
   public Command moveArmBackwards() {
     return run(
         () -> {
-          setArmSpeed(-Constants.Speed.ARMDUTYCYCLEDOWN);
+          setArmSpeed(-Constants.Speed.ARMDUTYCYCLEDOWNSMALL);
         });
   }
 
   public Command moveSmallArmBackwards() {
     return run(
         () -> {
-          setArmSpeed(-Constants.Speed.ARMDUTYCYCLEDOWN);
+          setArmSpeed(-Constants.Speed.ARMDUTYCYCLEDOWNSMALL);
         });
   }
 

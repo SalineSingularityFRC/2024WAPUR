@@ -162,6 +162,7 @@ public class SwerveSubsystem extends SubsystemBase {
         this // Reference to this subsystem to set requirements
     );
 
+    // Putting the odometry position on NetworkTables to see on Elastic
     publisher = NetworkTableInstance.getDefault()
       .getStructTopic("Final Odometry Position", Pose2d.struct).publish();
   }

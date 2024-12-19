@@ -115,6 +115,13 @@ public class ArmSubsystem extends SubsystemBase {
     armMotorPosition = armMotor1.getPosition().getValue();
   }
 
+  public void ArmSpeed(double speed) {
+    armMotor1.setControl(dutyCycleOut.withOutput(speed).withEnableFOC(true));
+
+    // armMotor1.setControl(velocityVoltage.withVelocity(speed).withFeedForward(0.1).withSlot(1));
+    armMotorPosition = armMotor1.getPosition().getValue();
+  }
+
   public void setPosition(double bigArmAngle) {
     armMotor1.setControl(
         positionTargetPreset.withPosition(bigArmAngle).withFeedForward(0.1).withSlot(0));
@@ -144,6 +151,20 @@ public class ArmSubsystem extends SubsystemBase {
     return run(
         () -> {
           setArmSpeed(Constants.Speed.ARMDUTYCYCLEUP);
+        });
+  }
+
+  public Command moveArmForwardFast() {
+    return run(
+        () -> {
+          setArmSpeed(Constants.Speed.ARMDUTYCYCLEUPFAST);
+        });
+  }
+
+  public Command moveArmForwardFaster() {
+    return run(
+        () -> {
+          setArmSpeed(Constants.Speed.ARMDUTYCYCLEUPFASTER);
         });
   }
 

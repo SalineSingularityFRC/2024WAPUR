@@ -140,10 +140,10 @@ public final class Constants {
 
   public static final class WheelOffset {
     // Converting rotations to radians
-    public static final double FL = (0.503662) * 2 * Math.PI;
-    public static final double FR = (0.088623) * 2 * Math.PI;
-    public static final double BL = (0.603516) * 2 * Math.PI;
-    public static final double BR = (0.176514) * 2 * Math.PI;
+    public static final double FL = (0.498535) * 2 * Math.PI;
+    public static final double FR = (0.090576) * 2 * Math.PI;
+    public static final double BL = (0.604248) * 2 * Math.PI;
+    public static final double BR = (0.175049) * 2 * Math.PI;
   }
 
   public static final class MotorGearRatio {
@@ -174,12 +174,16 @@ public final class Constants {
     public static final double ROBOT_SPEED_DIVISOR = 2.5; // what the max speed should be divided by, 1 is max power
     public static final double SHOOTER = 65; // speed of the shooter in rotations per second
     public static final double AMPSHOOTER = 15; // speed of the shooter in rotations per second
-    public static final double INTAKE = 0.4; // speed but converting to rpm for kVelocity control
+    public static final double INTAKE = 0.7; // speed but converting to rpm for kVelocity control
     public static final double ARM = 30; // rotations per second
     public static final double HOME = 0.2; // proportional
     public static final double CLIMBER = 280;
-    public static final double ARMDUTYCYCLEUP = 0.6; // between -1 and 1
+    public static final double ARMDUTYCYCLEUP = 0.4; // between -1 and 1
+    public static final double ARMDUTYCYCLEUPSMALL = 0.6; // between -1 and 1
+    public static final double ARMDUTYCYCLEUPFAST = 0.6; // between -1 and 1
+    public static final double ARMDUTYCYCLEUPFASTER = 0.8; // between -1 and 1
     public static final double ARMDUTYCYCLEDOWN = 0.2; // between -1 and 1
+    public static final double ARMDUTYCYCLEDOWNSMALL = 0.6; // between -1 and 1
     public static final double REVERSESHOOTER = 0.15; // between -1 and 1
   }
 

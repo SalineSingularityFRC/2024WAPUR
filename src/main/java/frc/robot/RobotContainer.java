@@ -85,6 +85,13 @@ public class RobotContainer {
         armController.povUp()
                 .and(bigArm::isNotAtTop)
                 .whileTrue(bigArm.moveArmForward());
+        armController.leftBumper()
+                .and(bigArm::isNotAtTop)
+                .whileTrue(bigArm.moveArmForwardFast());
+        armController.rightBumper()
+                .and(bigArm::isNotAtTop)
+                .whileTrue(bigArm.moveArmForwardFaster());
+
         armController.povDown()
                 .and(bigArm::isNotAtBottom)
                 .whileTrue(bigArm.moveArmBackwards());
@@ -93,7 +100,6 @@ public class RobotContainer {
         armController.povRight()
                 .whileTrue(smallArm.moveSmallArmBackwards());
         
-
         //driveController.povRight().onTrue(drive.xMode());
 
         drive.setDefaultCommand(
@@ -116,7 +122,7 @@ public class RobotContainer {
 
                         return driveController.getLeftX() * driveController.getLeftX();
                 },
-                        0.9, 3.0));
+                        0.9, 1.5));
     }
 
     protected Command getAutonomousCommand() {
