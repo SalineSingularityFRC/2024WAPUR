@@ -1,9 +1,12 @@
 package frc.robot.SwerveClasses;
 
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.Odometry;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj.Timer;
@@ -70,45 +73,57 @@ public class SwerveOdometry {
               new Rotation2d(subsystem.getSwerveModule(BR).getEncoderPosition())),
         });
 
-     
-  }
+    boolean doRejectUpdate = false;
 
-  public void visionUpdate(){
-       // Compute the robot's field-relative position exclusively from vision measurements.
-        PoseEstimate limelightPosEstimate = LimelightHelpers.getBotPoseEstimate_wpiRed("limelight");
-       
-        // Convert robot pose from Pose3d to Pose2d needed to apply vision measurements.
-        Pose2d visionMeasurement2d = limelightPosEstimate.pose;
-        SmartDashboard.putNumber("LimeLight Estimate X", visionMeasurement2d.getX());
-        SmartDashboard.putNumber("LimeLight Estimate Y", visionMeasurement2d.getY());
-        swerveOdometry.addVisionMeasurement(visionMeasurement2d, Timer.getFPGATimestamp() - (limelightPosEstimate.latency/1000.0));
-  }
+    // MegaTag 1
+    LimelightHelpers.PoseEstimate mt1 = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
+      
+      if(mt1.tagCount == 1 && mt1.rawFiducials.length == 1)
+      {
+        if(mt1.rawFiducials[0].ambiguity > .7)
+        {
+          doRejectUpdate = true;
+        }
+        if(mt1.rawFiducials[0].distToCamera > 3)
+        {
+          doRejectUpdate = true;
+        }
+      }
+      if(mt1.tagCount == 0)
+      {
+        doRejectUpdate = true;
+      }
 
-   
-
-  public Pose2d position() {
+      if(!doRejectUpdate)
+      {
+        swerveOdometry.setVisionMeasurementStdDevs(VecBuilder.fill(.5,.5,9999999));
+        swerveOdometry.addVisionMeasurement(
+            mt1.pose,
+            mt1.timestampSeconds);
+      }
     
-    double x = swerveOdometry.getEstimatedPosition().getX();
-    double y = swerveOdometry.getEstimatedPosition().getY();
-    
-    Rotation2d rotation = swerveOdometry.getEstimatedPosition().getRotation();
-    //rotation.times(360);
-    SmartDashboard.putNumber("Odometry X" , x);
-    SmartDashboard.putNumber("Odometry Y" , y);
-
-    return new Pose2d(new Translation2d(x, y), rotation);
+    // // MegaTag 2
+    // LimelightHelpers.SetRobotOrientation("limelight", swerveOdometry.getEstimatedPosition().getRotation().getDegrees(), 0, 0, 0, 0, 0);
+    // LimelightHelpers.PoseEstimate mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
+    // if(Math.abs(subsystem.getAngularChassisSpeed()) > 360) // if our angular velocity is greater than 720 degrees per second, ignore vision updates
+    // {
+    //   doRejectUpdate = true;
+    // }
+    // if(mt2.tagCount == 0)
+    // {
+    //   doRejectUpdate = true;
+    // }
+    // if(!doRejectUpdate)
+    // {
+    //   swerveOdometry.setVisionMeasurementStdDevs(VecBuilder.fill(1.5,1.5,9999999));
+    //   swerveOdometry.addVisionMeasurement(
+    //       mt2.pose,
+    //       mt2.timestampSeconds);
+    // }
   }
 
-  public double getRotation() {
-    return position().getRotation().getDegrees();
-  }
-
-  public double getX() {
-    return position().getX();
-  }
-
-public double getY() {
-    return position().getY();
+  public Pose2d getEstimatedPosition() {
+    return swerveOdometry.getEstimatedPosition();
   }
 
   public void resetPosition() {

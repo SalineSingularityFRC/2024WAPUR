@@ -9,12 +9,19 @@ import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.StructPublisher;
+import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -22,6 +29,7 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Limelight;
+import frc.robot.LimelightHelpers;
 import frc.robot.SwerveClasses.SwerveModule;
 import frc.robot.SwerveClasses.SwerveOdometry;
 
@@ -44,6 +52,7 @@ public class SwerveSubsystem extends SubsystemBase {
   private final int BR = 3;
 
   private SwerveModule[] swerveModules = new SwerveModule[4];
+  private SwerveModulePosition[] swerveModulePositions = new SwerveModulePosition[4];
   private final Translation2d[] vectorKinematics = new Translation2d[4];
 
   private final SwerveDriveKinematics swerveDriveKinematics;
@@ -52,6 +61,10 @@ public class SwerveSubsystem extends SubsystemBase {
 
   private SwerveOdometry odometry;
 
+  private StructPublisher<Pose2d> publisher;
+
+  private NetworkTableInstance inst;
+  private NetworkTable table;
   /*
    * This constructor should create an instance of the pidgeon class, and should
    * construct four copies of the
@@ -59,6 +72,9 @@ public class SwerveSubsystem extends SubsystemBase {
    * Use values from the Constants.java class
    */
   public SwerveSubsystem() {
+    inst = NetworkTableInstance.getDefault();
+    table = inst.getTable("datatable");
+
     gyro = new Pigeon2(Constants.CanId.CanCoder.GYRO, Constants.Canbus.DRIVE_TRAIN);
 
     vectorKinematics[FL] = new Translation2d(Constants.Measurement.WHEEL_BASE / 2, Constants.Measurement.TRACK_WIDTH / 2);
@@ -108,17 +124,17 @@ public class SwerveSubsystem extends SubsystemBase {
 
     odometry = new SwerveOdometry(this, vectorKinematics);
     odometry.resetPosition();
-    Consumer<ChassisSpeeds> consumer_chasis = ch_speed -> {
-      SwerveModuleState[] modules = swerveDriveKinematics.toSwerveModuleStates(ch_speed);
-      setModuleStates(modules);
-    };
+
     Supplier<ChassisSpeeds> supplier_chasis = () -> {
       ChassisSpeeds temp = getChassisSpeed();
       return temp;
     };
+    Consumer<ChassisSpeeds> consumer_chasis = ch_speed -> {
+      SwerveModuleState[] modules = swerveDriveKinematics.toSwerveModuleStates(ch_speed);
+      setModuleStates(modules);
+    };
     Supplier<Pose2d> supplier_position = () -> {
-      SmartDashboard.putNumber("Rotation", odometry.getRotation());
-      return odometry.position();
+      return odometry.getEstimatedPosition();
     };
     Consumer<Pose2d> consumer_position = pose -> {
       odometry.setPosition(pose);
@@ -151,6 +167,8 @@ public class SwerveSubsystem extends SubsystemBase {
         },
         this // Reference to this subsystem to set requirements
     );
+
+    publisher = table.getStructTopic("Final Odometry Position", Pose2d.struct).publish();
   }
 
   public void drive(
@@ -198,10 +216,14 @@ public class SwerveSubsystem extends SubsystemBase {
 
   public void periodic() {
     odometry.update();
+    publisher.set(odometry.getEstimatedPosition());
   }
 
   public void disabledPeriodic() {
+  }
 
+  public void updateOdometry() {
+      odometry.update();
   }
 
   /*
@@ -234,18 +256,14 @@ public class SwerveSubsystem extends SubsystemBase {
     // backwards
   }
 
+  public double getAngularChassisSpeed() {
+    return gyro.getRate();
+  }
+
   public Command resetGyroCommand() {
     return runOnce(
         () -> {
           resetGyro();
-        });
-  }
-
-  public Command visionUpdateCommand() {
-    return run(
-        () -> {
-          odometry.visionUpdate();
-
         });
   }
 
